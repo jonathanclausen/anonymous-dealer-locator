@@ -1,0 +1,578 @@
+/**
+ * Frontend CSS for Anonymous Dealer Locator - WordPress native styling
+ */
+
+/* Container and layout */
+.adl-container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.adl-container h2 {
+    margin-bottom: 0.5em;
+}
+
+.adl-container .subtitle {
+    color: #666;
+    margin-bottom: 2em;
+}
+
+/* Search box styling - WordPress native */
+.adl-search-container {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+
+.adl-search-title {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+}
+
+.adl-search-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.adl-search-box input[type="text"] {
+    flex: 1;
+    min-width: 250px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 1.42857143;
+}
+
+.adl-search-box input[type="text"]:focus {
+    border-color: #0073aa;
+    box-shadow: 0 0 0 1px #0073aa;
+    outline: 2px solid transparent;
+}
+
+.adl-search-box button {
+    padding: 8px 12px;
+    background: #0073aa;
+    color: white;
+    border: 1px solid #0073aa;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 13px;
+    line-height: 1.42857143;
+    font-weight: 400;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.adl-search-box button:hover {
+    background: #005a87;
+    border-color: #005a87;
+}
+
+.adl-search-box button:focus {
+    background: #005a87;
+    border-color: #005a87;
+    box-shadow: 0 0 0 1px #0073aa;
+}
+
+.adl-search-box button:disabled {
+    background: #ccc;
+    border-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Geolocation button - WordPress style */
+.adl-geo-btn {
+    display: inline-block !important;
+    text-decoration: none !important;
+    font-size: 13px !important;
+    line-height: 2.15384615 !important;
+    min-height: 30px !important;
+    margin: 0 !important;
+    padding: 0 12px !important;
+    cursor: pointer !important;
+    border-width: 1px !important;
+    border-style: solid !important;
+    border-radius: 3px !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
+    background: #2271b1 !important;
+    border-color: #2271b1 !important;
+    color: #fff !important;
+    text-shadow: none !important;
+    font-weight: 400 !important;
+}
+
+.adl-geo-btn:hover {
+    background: #135e96 !important;
+    border-color: #135e96 !important;
+    color: #fff !important;
+}
+
+.adl-geo-btn:focus {
+    background: #135e96 !important;
+    border-color: #135e96 !important;
+    color: #fff !important;
+    box-shadow: 0 0 0 1px #2271b1 !important;
+    outline: 2px solid transparent !important;
+}
+
+.adl-geo-btn:disabled {
+    color: #a7aaad !important;
+    border-color: #dcdcde !important;
+    background: #f6f7f7 !important;
+    box-shadow: none !important;
+    cursor: not-allowed !important;
+    text-shadow: none !important;
+}
+
+/* Search results - WordPress style */
+.adl-search-results {
+    margin-bottom: 20px;
+}
+
+.adl-results-header {
+    background: #f0f0f1;
+    border: 1px solid #c3c4c7;
+    color: #1d2327;
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.adl-no-results {
+    background: #fff3cd;
+    border: 1px solid #ffecb5;
+    color: #856404;
+    padding: 12px 16px;
+    border-radius: 4px;
+}
+
+.adl-error {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+    padding: 12px 16px;
+    border-radius: 4px;
+}
+
+/* Map styling - WordPress style */
+.adl-map {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.adl-map-container {
+    margin-top: 20px;
+}
+
+.adl-map-title {
+    margin-bottom: 15px;
+    font-size: 1.3em;
+}
+
+.adl-map-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #f0f0f1;
+    border: 1px solid #c3c4c7;
+    padding: 20px;
+    border-radius: 4px;
+    z-index: 1000;
+    text-align: center;
+}
+
+.adl-map-loading p {
+    margin: 0;
+    color: #1d2327;
+}
+
+/* Kort markører - Moderne design */
+.adl-marker {
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.adl-marker-icon {
+    width: 32px;
+    height: 32px;
+    background-color: #007cba;
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+    transition: all 0.3s ease;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.adl-marker-icon::before {
+    content: '';
+    width: 12px;
+    height: 12px;
+    background-color: #ffffff;
+    border-radius: 50%;
+}
+
+.adl-marker:hover .adl-marker-icon {
+    background-color: #005a87;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.35);
+    transform: scale(1.1);
+}
+
+/* Bruger marker (geolocation) - Moderne design */
+.adl-user-marker {
+    cursor: default;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.adl-user-marker-icon {
+    width: 40px;
+    height: 40px;
+    background-color: #28a745;
+    border: 4px solid #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+    position: relative;
+    animation: adl-pulse 2s infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.adl-user-marker-icon::before {
+    content: '';
+    width: 16px;
+    height: 16px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    position: relative;
+    z-index: 1;
+}
+
+.adl-user-marker-icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    background-color: #28a745;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+}
+
+@keyframes adl-pulse {
+    0% {
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4), 0 0 0 0 rgba(40, 167, 69, 0.7);
+    }
+    70% {
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4), 0 0 0 10px rgba(40, 167, 69, 0);
+    }
+    100% {
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4), 0 0 0 0 rgba(40, 167, 69, 0);
+    }
+}
+
+/* Modal styling - WordPress style */
+.adl-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 160000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.adl-modal-content {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.adl-modal-header {
+    background: #f0f0f1;
+    border-bottom: 1px solid #c3c4c7;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.adl-modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    line-height: 1.4;
+    color: #1d2327;
+}
+
+.adl-modal-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: #646970;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+}
+
+.adl-modal-close:hover {
+    color: #1d2327;
+}
+
+.adl-modal-body {
+    padding: 20px;
+}
+
+/* Form styling - WordPress style */
+.adl-form-group {
+    margin-bottom: 20px;
+}
+
+.adl-form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.adl-form-group input,
+.adl-form-group textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    background-color: #fff;
+    color: #2c3338;
+    font-size: 14px;
+    line-height: 1.42857143;
+    box-sizing: border-box;
+}
+
+.adl-form-group input:focus,
+.adl-form-group textarea:focus {
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+    outline: 2px solid transparent;
+}
+
+.adl-form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.adl-form-group:last-child {
+    margin-bottom: 0;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+/* Buttons - WordPress style */
+.adl-submit-btn,
+.adl-cancel-btn {
+    display: inline-block;
+    text-decoration: none;
+    font-size: 13px;
+    line-height: 2.15384615;
+    min-height: 30px;
+    margin: 0;
+    padding: 0 10px;
+    cursor: pointer;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 3px;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+.adl-submit-btn {
+    background: #2271b1;
+    border-color: #2271b1;
+    color: #fff;
+}
+
+.adl-submit-btn:hover,
+.adl-submit-btn:focus {
+    background: #135e96;
+    border-color: #135e96;
+    color: #fff;
+}
+
+.adl-submit-btn:disabled {
+    color: #a7aaad !important;
+    border-color: #dcdcde !important;
+    background: #f6f7f7 !important;
+    box-shadow: none !important;
+    cursor: default;
+}
+
+.adl-cancel-btn {
+    background: #f6f7f7;
+    border-color: #dcdcde;
+    color: #2c3338;
+}
+
+.adl-cancel-btn:hover,
+.adl-cancel-btn:focus {
+    background: #f0f0f1;
+    border-color: #0a4b78;
+    color: #0a4b78;
+}
+
+/* Messages - WordPress style */
+.adl-form-messages {
+    margin-top: 15px;
+}
+
+.adl-success {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+    padding: 12px 16px;
+    border-radius: 4px;
+}
+
+.adl-form-messages .adl-error {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+    padding: 12px 16px;
+    border-radius: 4px;
+}
+
+/* Responsive design - WordPress style */
+@media (max-width: 768px) {
+    .adl-container {
+        padding: 15px;
+    }
+    
+    .adl-search-box {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .adl-search-box input[type="text"] {
+        min-width: 100%;
+    }
+    
+    .adl-modal {
+        padding: 10px;
+    }
+    
+    .adl-modal-content {
+        max-height: 95vh;
+    }
+    
+    .adl-modal-header,
+    .adl-modal-body {
+        padding: 15px;
+    }
+    
+    .adl-form-group:last-child {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .adl-submit-btn,
+    .adl-cancel-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .adl-container {
+        padding: 10px;
+    }
+    
+    .adl-search-container {
+        padding: 15px;
+    }
+    
+    .adl-modal-header,
+    .adl-modal-body {
+        padding: 12px;
+    }
+    
+    .adl-form-group input,
+    .adl-form-group textarea {
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+}
+
+/* Mapbox overrides */
+.mapboxgl-popup-content {
+    padding: 15px !important;
+    border-radius: 8px !important;
+}
+
+.mapboxgl-popup-close-button {
+    font-size: 18px !important;
+    padding: 5px !important;
+    color: #999 !important;
+}
+
+.mapboxgl-popup-close-button:hover {
+    background-color: #f8f9fa !important;
+    color: #333 !important;
+}
+
+/* Tilgængelighed */
+.adl-search-box button:focus,
+.adl-submit-btn:focus,
+.adl-cancel-btn:focus,
+.adl-modal-close:focus {
+    outline: 2px solid #007cba;
+    outline-offset: 2px;
+}
+
+/* Print styling */
+@media print {
+    .adl-modal {
+        display: none !important;
+    }
+    
+    .adl-search-container {
+        display: none !important;
+    }
+    
+    .adl-map {
+        page-break-inside: avoid;
+    }
+}
