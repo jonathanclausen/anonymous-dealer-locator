@@ -93,47 +93,37 @@
 
 /* Geolocation button - WordPress style */
 .adl-geo-btn {
-    display: inline-block !important;
-    text-decoration: none !important;
-    font-size: 13px !important;
-    line-height: 2.15384615 !important;
-    min-height: 30px !important;
-    margin: 0 !important;
-    padding: 0 12px !important;
+    padding: 8px 12px !important;
+    background: #0073aa !important;
+    color: white !important;
+    border: 1px solid #0073aa !important;
+    border-radius: 4px !important;
     cursor: pointer !important;
-    border-width: 1px !important;
-    border-style: solid !important;
-    border-radius: 3px !important;
-    white-space: nowrap !important;
-    box-sizing: border-box !important;
-    background: #2271b1 !important;
-    border-color: #2271b1 !important;
-    color: #fff !important;
-    text-shadow: none !important;
+    text-decoration: none !important;
+    display: inline-block !important;
+    font-size: 13px !important;
+    line-height: 1.42857143 !important;
     font-weight: 400 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    vertical-align: middle !important;
 }
 
 .adl-geo-btn:hover {
-    background: #135e96 !important;
-    border-color: #135e96 !important;
-    color: #fff !important;
+    background: #005a87 !important;
+    border-color: #005a87 !important;
 }
 
 .adl-geo-btn:focus {
-    background: #135e96 !important;
-    border-color: #135e96 !important;
-    color: #fff !important;
-    box-shadow: 0 0 0 1px #2271b1 !important;
-    outline: 2px solid transparent !important;
+    background: #005a87 !important;
+    border-color: #005a87 !important;
+    box-shadow: 0 0 0 1px #0073aa !important;
 }
 
 .adl-geo-btn:disabled {
-    color: #a7aaad !important;
-    border-color: #dcdcde !important;
-    background: #f6f7f7 !important;
-    box-shadow: none !important;
+    background: #ccc !important;
+    border-color: #ccc !important;
     cursor: not-allowed !important;
-    text-shadow: none !important;
 }
 
 /* Search results - WordPress style */

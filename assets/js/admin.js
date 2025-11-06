@@ -86,10 +86,18 @@ jQuery(document).ready(function($) {
         }
     });
     
-    // Validate coordinates
-    function validateCoordinates() {
-        var lat = parseFloat($('#latitude').val());
-        var lng = parseFloat($('#longitude').val());
+    // Validate coordinates (scoped to a specific form)
+    function validateCoordinates($form) {
+        var $latInput = $form.find('#latitude');
+        var $lngInput = $form.find('#longitude');
+
+        // If the form does not contain coordinate fields, skip validation
+        if ($latInput.length === 0 || $lngInput.length === 0) {
+            return true;
+        }
+
+        var lat = parseFloat($latInput.val());
+        var lng = parseFloat($lngInput.val());
         
         if (isNaN(lat) || isNaN(lng)) {
             return false;
@@ -106,9 +114,10 @@ jQuery(document).ready(function($) {
         return true;
     }
     
-    // Validate form before submit
+    // Validate form before submit (only forms that actually contain coordinates)
     $('form').on('submit', function(e) {
-        if (!validateCoordinates()) {
+        var $form = $(this);
+        if (!validateCoordinates($form)) {
             e.preventDefault();
             alert('Please check the coordinates or use the "Get Coordinates" button.');
         }

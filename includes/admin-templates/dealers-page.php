@@ -13,6 +13,26 @@ if (!defined('ABSPATH')) {
     <a href="<?php echo admin_url('admin.php?page=adl-add-dealer'); ?>" class="page-title-action"><?php _e('Tilføj Ny', 'anonymous-dealer-locator'); ?></a>
     <hr class="wp-header-end">
 
+    <div class="notice notice-info" style="margin-top:10px;">
+        <p>
+            <?php 
+            $missing_text = sprintf(
+                /* translators: %d is number of dealers missing coordinates */
+                __('Forhandlere uden koordinater: %d', 'anonymous-dealer-locator'),
+                isset($missing_count) ? intval($missing_count) : 0
+            );
+            echo esc_html($missing_text);
+            ?>
+            <?php if (!empty($missing_count)): ?>
+                <?php if (isset($_GET['adl_missing']) && $_GET['adl_missing'] === '1'): ?>
+                    <a href="<?php echo esc_url(admin_url('admin.php?page=adl-dealers')); ?>" class="button button-secondary" style="margin-left:10px;"><?php _e('Vis alle', 'anonymous-dealer-locator'); ?></a>
+                <?php else: ?>
+                    <a href="<?php echo esc_url(admin_url('admin.php?page=adl-dealers&adl_missing=1')); ?>" class="button button-secondary" style="margin-left:10px;"><?php _e('Vis kun uden koordinater', 'anonymous-dealer-locator'); ?></a>
+                <?php endif; ?>
+            <?php endif; ?>
+        </p>
+    </div>
+
     <?php if ($edit_dealer): ?>
         <div class="adl-edit-form">
             <h2><?php _e('Rediger Forhandler', 'anonymous-dealer-locator'); ?></h2>
@@ -92,6 +112,7 @@ if (!defined('ABSPATH')) {
                     <th scope="col"><?php _e('By', 'anonymous-dealer-locator'); ?></th>
                     <th scope="col"><?php _e('Postnummer', 'anonymous-dealer-locator'); ?></th>
                     <th scope="col"><?php _e('Status', 'anonymous-dealer-locator'); ?></th>
+                    <th scope="col"><?php _e('Koordinater', 'anonymous-dealer-locator'); ?></th>
                     <th scope="col"><?php _e('Handlinger', 'anonymous-dealer-locator'); ?></th>
                 </tr>
             </thead>
@@ -107,6 +128,18 @@ if (!defined('ABSPATH')) {
                             <span class="status-<?php echo esc_attr($dealer->status); ?>">
                                 <?php echo $dealer->status === 'active' ? __('Aktiv', 'anonymous-dealer-locator') : __('Inaktiv', 'anonymous-dealer-locator'); ?>
                             </span>
+                        </td>
+                        <td>
+                            <?php
+                            $lat = floatval($dealer->latitude);
+                            $lng = floatval($dealer->longitude);
+                            $missing = (!is_numeric($lat) || !is_numeric($lng) || $lat < -90 || $lat > 90 || $lng < -180 || $lng > 180 || ($lat == 0 && $lng == 0));
+                            if ($missing): ?>
+                                <span class="adl-coord-badge adl-badge-missing"><?php _e('Mangler', 'anonymous-dealer-locator'); ?></span>
+                                <a href="<?php echo admin_url('admin.php?page=adl-dealers&action=edit&id=' . $dealer->id); ?>" class="button-link" style="margin-left:8px;"><?php _e('Ret', 'anonymous-dealer-locator'); ?></a>
+                            <?php else: ?>
+                                <span class="adl-coord-badge adl-badge-ok"><?php echo esc_html(number_format($lat, 5)) . ', ' . esc_html(number_format($lng, 5)); ?></span>
+                            <?php endif; ?>
                         </td>
                         <td>
                             <a href="<?php echo admin_url('admin.php?page=adl-dealers&action=edit&id=' . $dealer->id); ?>" class="button button-small"><?php _e('Rediger', 'anonymous-dealer-locator'); ?></a>
@@ -125,4 +158,7 @@ if (!defined('ABSPATH')) {
 .status-active { color: #46b450; font-weight: bold; }
 .status-inactive { color: #dc3232; font-weight: bold; }
 .adl-edit-form { background: #fff; padding: 20px; border: 1px solid #ccd0d4; margin-bottom: 20px; }
+.adl-coord-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; }
+.adl-badge-ok { background: #e7f7ec; color: #1f8f3e; border: 1px solid #bfe8cb; }
+.adl-badge-missing { background: #fdecea; color: #9f2a1e; border: 1px solid #f5c6cb; font-weight: 600; }
 </style>
