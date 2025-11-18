@@ -103,9 +103,28 @@ if (!defined('ABSPATH')) {
             <p><?php _e('Ingen forhandlere fundet. Tilføj din første forhandler for at komme i gang.', 'anonymous-dealer-locator'); ?></p>
         </div>
     <?php else: ?>
+        <form method="post" action="" id="dealers-bulk-form">
+            <?php wp_nonce_field('adl_bulk_action', 'adl_bulk_nonce'); ?>
+            <div class="tablenav top">
+                <div class="alignleft actions bulkactions">
+                    <label for="bulk-action-selector" class="screen-reader-text"><?php _e('Select bulk action', 'anonymous-dealer-locator'); ?></label>
+                    <select name="action" id="bulk-action-selector">
+                        <option value="-1"><?php _e('Bulk Actions', 'anonymous-dealer-locator'); ?></option>
+                        <option value="update_email"><?php _e('Update Email', 'anonymous-dealer-locator'); ?></option>
+                        <option value="delete"><?php _e('Delete', 'anonymous-dealer-locator'); ?></option>
+                    </select>
+                    <input type="submit" id="doaction" class="button action" value="<?php _e('Apply', 'anonymous-dealer-locator'); ?>" />
+                    <button type="button" id="delete-all-btn" class="button button-link-delete" style="margin-left: 10px;">
+                        <?php _e('Delete All', 'anonymous-dealer-locator'); ?>
+                    </button>
+                </div>
+            </div>
         <table class="wp-list-table widefat fixed striped">
             <thead>
                 <tr>
+                    <td class="manage-column column-cb check-column">
+                        <input type="checkbox" id="cb-select-all" />
+                    </td>
                     <th scope="col"><?php _e('Navn', 'anonymous-dealer-locator'); ?></th>
                     <th scope="col"><?php _e('Email', 'anonymous-dealer-locator'); ?></th>
                     <th scope="col"><?php _e('Telefon', 'anonymous-dealer-locator'); ?></th>
@@ -119,6 +138,9 @@ if (!defined('ABSPATH')) {
             <tbody>
                 <?php foreach ($dealers as $dealer): ?>
                     <tr>
+                        <th scope="row" class="check-column">
+                            <input type="checkbox" name="dealers[]" value="<?php echo intval($dealer->id); ?>" class="dealer-checkbox" />
+                        </th>
                         <td><strong><?php echo esc_html($dealer->name); ?></strong></td>
                         <td><?php echo esc_html($dealer->email); ?></td>
                         <td><?php echo esc_html($dealer->phone); ?></td>
@@ -151,8 +173,170 @@ if (!defined('ABSPATH')) {
                 <?php endforeach; ?>
             </tbody>
         </table>
+        </form>
     <?php endif; ?>
 </div>
+
+<!-- Bulk Email Update Modal -->
+<div id="adl-bulk-email-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 100000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; padding: 30px; border-radius: 5px; max-width: 500px; width: 90%; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+        <h2><?php _e('Bulk Update Email', 'anonymous-dealer-locator'); ?></h2>
+        <p><?php _e('Enter the new email address to apply to all selected dealers:', 'anonymous-dealer-locator'); ?></p>
+        <form id="adl-bulk-email-form">
+            <table class="form-table">
+                <tr>
+                    <th scope="row"><label for="bulk_email"><?php _e('New Email', 'anonymous-dealer-locator'); ?> *</label></th>
+                    <td>
+                        <input type="email" id="bulk_email" name="bulk_email" class="regular-text" required />
+                        <p class="description"><?php _e('This email will be applied to all selected dealers.', 'anonymous-dealer-locator'); ?></p>
+                    </td>
+                </tr>
+            </table>
+            <p class="submit">
+                <button type="submit" class="button button-primary"><?php _e('Update Emails', 'anonymous-dealer-locator'); ?></button>
+                <button type="button" class="button" id="cancel-bulk-email"><?php _e('Cancel', 'anonymous-dealer-locator'); ?></button>
+            </p>
+        </form>
+    </div>
+</div>
+
+<script>
+jQuery(document).ready(function($) {
+    // Select all checkbox
+    $('#cb-select-all').on('change', function() {
+        $('.dealer-checkbox').prop('checked', $(this).prop('checked'));
+    });
+    
+    // Update select all when individual checkboxes change
+    $('.dealer-checkbox').on('change', function() {
+        var total = $('.dealer-checkbox').length;
+        var checked = $('.dealer-checkbox:checked').length;
+        $('#cb-select-all').prop('checked', total === checked);
+    });
+    
+    // Delete All button
+    $('#delete-all-btn').on('click', function(e) {
+        e.preventDefault();
+        var total = $('.dealer-checkbox').length;
+        
+        if (total === 0) {
+            alert('<?php _e('No dealers to delete.', 'anonymous-dealer-locator'); ?>');
+            return;
+        }
+        
+        if (confirm('<?php _e('Are you sure you want to delete ALL', 'anonymous-dealer-locator'); ?> ' + total + ' <?php _e('dealers? This action cannot be undone!', 'anonymous-dealer-locator'); ?>')) {
+            // Select all checkboxes
+            $('.dealer-checkbox').prop('checked', true);
+            $('#cb-select-all').prop('checked', true);
+            // Set action to delete
+            $('#bulk-action-selector').val('delete');
+            // Submit form
+            $('#dealers-bulk-form').submit();
+        }
+    });
+    
+    // Bulk form submission
+    $('#dealers-bulk-form').on('submit', function(e) {
+        var action = $('#bulk-action-selector').val();
+        var checked = $('.dealer-checkbox:checked').length;
+        
+        if (action === '-1') {
+            e.preventDefault();
+            alert('<?php _e('Please select a bulk action.', 'anonymous-dealer-locator'); ?>');
+            return false;
+        }
+        
+        if (checked === 0) {
+            e.preventDefault();
+            alert('<?php _e('Please select at least one dealer.', 'anonymous-dealer-locator'); ?>');
+            return false;
+        }
+        
+        if (action === 'update_email') {
+            e.preventDefault();
+            // Show modal
+            $('#adl-bulk-email-modal').fadeIn();
+            return false;
+        }
+        
+        if (action === 'delete') {
+            var message = checked === 1 
+                ? '<?php _e('Are you sure you want to delete this dealer?', 'anonymous-dealer-locator'); ?>'
+                : '<?php _e('Are you sure you want to delete', 'anonymous-dealer-locator'); ?> ' + checked + ' <?php _e('dealers?', 'anonymous-dealer-locator'); ?>';
+            
+            if (!confirm(message)) {
+                e.preventDefault();
+                return false;
+            }
+        }
+    });
+    
+    // Bulk email update form
+    $('#adl-bulk-email-form').on('submit', function(e) {
+        e.preventDefault();
+        
+        var newEmail = $('#bulk_email').val();
+        var selectedDealers = [];
+        $('.dealer-checkbox:checked').each(function() {
+            selectedDealers.push($(this).val());
+        });
+        
+        if (selectedDealers.length === 0) {
+            alert('<?php _e('Please select at least one dealer.', 'anonymous-dealer-locator'); ?>');
+            return false;
+        }
+        
+        if (!newEmail || !isValidEmail(newEmail)) {
+            alert('<?php _e('Please enter a valid email address.', 'anonymous-dealer-locator'); ?>');
+            return false;
+        }
+        
+        // Submit via AJAX
+        $.ajax({
+            url: adl_ajax.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'adl_bulk_update_email',
+                dealers: selectedDealers,
+                email: newEmail,
+                nonce: adl_ajax.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    $('#adl-bulk-email-modal').fadeOut();
+                    location.reload();
+                } else {
+                    alert(response.data || '<?php _e('Failed to update emails.', 'anonymous-dealer-locator'); ?>');
+                }
+            },
+            error: function() {
+                alert('<?php _e('An error occurred.', 'anonymous-dealer-locator'); ?>');
+            }
+        });
+        
+        return false;
+    });
+    
+    // Close modal
+    $('#cancel-bulk-email').on('click', function() {
+        $('#adl-bulk-email-modal').fadeOut();
+        $('#bulk_email').val('');
+    });
+    
+    // Close modal when clicking outside
+    $('#adl-bulk-email-modal').on('click', function(e) {
+        if (e.target === this) {
+            $(this).fadeOut();
+            $('#bulk_email').val('');
+        }
+    });
+    
+    function isValidEmail(email) {
+        var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    }
+});
+</script>
 
 <style>
 .status-active { color: #46b450; font-weight: bold; }

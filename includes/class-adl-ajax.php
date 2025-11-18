@@ -194,12 +194,19 @@ class ADL_Ajax {
         // Anti-spam check (simple honeypot og rate limiting kunne tilføjes her)
         
         // Send email til forhandler
-        $email_sent = $this->sendDealerEmail($dealer, array(
+        $customer_data = array(
             'customer_name' => $customer_name,
             'customer_email' => $customer_email,
             'customer_phone' => $customer_phone,
             'customer_message' => $customer_message
-        ));
+        );
+        
+        $email_sent = $this->sendDealerEmail($dealer, $customer_data);
+        
+        // Send confirmation email to customer
+        if ($email_sent) {
+            $this->sendCustomerConfirmationEmail($customer_data, $dealer);
+        }
         
         // Save inquiry to database
         $inquiry_data = array(
@@ -227,8 +234,8 @@ class ADL_Ajax {
      */
     private function sendDealerEmail($dealer, $customer_data) {
         $subject = sprintf(
-            __('New customer inquiry via %s', 'anonymous-dealer-locator'),
-            get_bloginfo('name')
+            __('End user inquiry via STORM Robot – %s', 'anonymous-dealer-locator'),
+            $dealer->name
         );
         
         $message = $this->buildEmailMessage($dealer, $customer_data);
@@ -239,7 +246,96 @@ class ADL_Ajax {
             'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>'
         );
         
-        return wp_mail($dealer->email, $subject, $message, $headers);
+        return wp_mail('storm@am-robots.com', $subject, $message, $headers);
+    }
+    
+    /**
+     * Send confirmation email to customer
+     */
+    private function sendCustomerConfirmationEmail($customer_data, $dealer) {
+        $subject = sprintf(
+            __('Thank you for contacting AM-Robots, we will get back to you as soon as possible - %s', 'anonymous-dealer-locator'),
+            get_bloginfo('name')
+        );
+        
+        $message = $this->buildCustomerConfirmationMessage($customer_data, $dealer);
+        
+        $headers = array(
+            'Content-Type: text/html; charset=UTF-8',
+            'From: ' . get_bloginfo('name') . ' <' . get_option('admin_email') . '>'
+        );
+        
+        return wp_mail($customer_data['customer_email'], $subject, $message, $headers);
+    }
+    
+    /**
+     * Build customer confirmation email message
+     */
+    private function buildCustomerConfirmationMessage($customer_data, $dealer) {
+        ob_start();
+        ?>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title><?php _e('Thank you for your inquiry', 'anonymous-dealer-locator'); ?></title>
+            <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .logo-header { background-color: #98c82f; padding: 30px 20px; border-radius: 5px; margin-bottom: 20px; text-align: center; }
+                .logo-header img { max-width: 250px; height: auto; }
+                .header { background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 20px; }
+                .content { background-color: #ffffff; padding: 20px; border: 1px solid #dee2e6; border-radius: 5px; }
+                .info-box { background-color: #e9ecef; padding: 15px; border-radius: 5px; margin: 15px 0; }
+                .footer { margin-top: 20px; font-size: 12px; color: #6c757d; }
+                .highlight { color: #98c82f; font-weight: bold; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="logo-header">
+                    <img src="https://am-robots.com/wp-content/uploads/2025/03/Logo_AM-Robots_White_mark-left_websiteLogo.png" alt="AM-Robots Logo" />
+                </div>
+                <div class="header">
+                    <h2><?php _e('Thank you for your inquiry!', 'anonymous-dealer-locator'); ?></h2>
+                </div>
+                
+                <div class="content">
+                    <p><?php _e('Hello', 'anonymous-dealer-locator'); ?> <?php echo esc_html($customer_data['customer_name']); ?>,</p>
+                    
+                    <p><?php _e('We have received your inquiry and a dealer in your area will contact you shortly.', 'anonymous-dealer-locator'); ?></p>
+                    
+                    <h3><?php _e('Your inquiry details:', 'anonymous-dealer-locator'); ?></h3>
+                    <div class="info-box">
+                        <p><strong><?php _e('Dealer:', 'anonymous-dealer-locator'); ?></strong> <?php echo esc_html($dealer->name); ?></p>
+                        <p><strong><?php _e('Your message:', 'anonymous-dealer-locator'); ?></strong></p>
+                        <p><?php echo nl2br(esc_html($customer_data['customer_message'])); ?></p>
+                    </div>
+                    
+                    <p><?php _e('A representative will review your inquiry and get back to you as soon as possible.', 'anonymous-dealer-locator'); ?></p>
+                    
+                    <p><?php _e('While waiting you can read more about STORM Robot here:', 'anonymous-dealer-locator'); ?></p>
+                    
+                    <p><a href="https://am-robots.com/blog/meet-storm-the-next-gen-robotic-lawn-mower/" style="color: #98c82f; text-decoration: none;"><?php _e('Meet STORM: The Next-Gen Robotic Lawn Mower', 'anonymous-dealer-locator'); ?></a></p>
+                    
+                    <p><?php _e('If you have any urgent questions, please feel free to contact us directly.', 'anonymous-dealer-locator'); ?></p>
+                    
+                    <p><?php _e('Best regards,', 'anonymous-dealer-locator'); ?><br>
+                    <span class="highlight">AM-Robots</span><br>
+                    +45 8140 1221<br>
+                    <a href="mailto:Storm@am-robots.com" style="color: #98c82f; text-decoration: none;">Storm@am-robots.com</a></p>
+                </div>
+                
+                <div class="footer">
+                    <p><?php _e('This is an automated confirmation email.', 'anonymous-dealer-locator'); ?></p>
+                    <p><?php _e('Sent from:', 'anonymous-dealer-locator'); ?> <a href="<?php echo home_url(); ?>"><?php echo get_bloginfo('name'); ?></a></p>
+                    <p><?php echo current_time('d/m/Y H:i'); ?></p>
+                </div>
+            </div>
+        </body>
+        </html>
+        <?php
+        return ob_get_clean();
     }
     
     /**
@@ -267,6 +363,7 @@ class ADL_Ajax {
             <div class="container">
                 <div class="header">
                     <h2><?php _e('New Customer Inquiry', 'anonymous-dealer-locator'); ?></h2>
+                    <p><strong><?php _e('Dealer:', 'anonymous-dealer-locator'); ?></strong> <?php echo esc_html($dealer->name); ?></p>
                     <p><?php _e('You have received a new inquiry via your dealer page on', 'anonymous-dealer-locator'); ?> <?php echo get_bloginfo('name'); ?>.</p>
                 </div>
                 
