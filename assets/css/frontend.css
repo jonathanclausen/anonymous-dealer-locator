@@ -473,7 +473,8 @@
 .adl-cancel-btn {
     display: inline-block;
     text-decoration: none;
-    font-size: 13px;
+    font-size: inherit;
+    font-family: inherit;
     line-height: 2.15384615;
     min-height: 30px;
     margin: 0;
@@ -487,15 +488,15 @@
 }
 
 .adl-submit-btn {
-    background: #2271b1;
-    border-color: #2271b1;
+    background: #e09900;
+    border-color: #e09900;
     color: #fff;
 }
 
 .adl-submit-btn:hover,
 .adl-submit-btn:focus {
-    background: #135e96;
-    border-color: #135e96;
+    background: #c08500;
+    border-color: #c08500;
     color: #fff;
 }
 
