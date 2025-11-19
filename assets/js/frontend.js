@@ -336,16 +336,13 @@ var ADL = {
         
         // Handle map zooming based on context
         if (zoomToClosest === true) {
-            // Search results or geolocation - zoom to show dealers
-            if (dealers.length === 1) {
-                // Single dealer - zoom to that dealer
+            // Search results or geolocation - zoom to closest dealer
+            if (dealers.length > 0) {
+                // Always zoom to the closest dealer (first in array)
                 this.map.flyTo({
                     center: [parseFloat(dealers[0].longitude), parseFloat(dealers[0].latitude)],
                     zoom: 12
                 });
-            } else if (dealers.length > 1) {
-                // Multiple dealers - fit bounds to show all, or zoom to closest
-                this.fitMapToBounds(dealers);
             }
         } else if (zoomToClosest === false) {
             // Initial load - fit bounds to show all dealers
