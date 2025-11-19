@@ -190,6 +190,30 @@ var ADL = {
             .setLngLat([parseFloat(dealer.longitude), parseFloat(dealer.latitude)])
             .addTo(this.map);
         
+        // Create popup for hover (showing town/city)
+        var popup = new mapboxgl.Popup({
+            closeButton: false,
+            closeOnClick: false,
+            className: 'adl-marker-popup'
+        });
+        
+        var map = this.map; // Capture map reference for event listeners
+        
+        // Show popup on hover
+        el.addEventListener('mouseenter', function() {
+            if (dealer.city) {
+                var cityText = dealer.city.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+                popup.setLngLat([parseFloat(dealer.longitude), parseFloat(dealer.latitude)])
+                    .setHTML('<div class="adl-popup-content">' + cityText + '</div>')
+                    .addTo(map);
+            }
+        });
+        
+        // Hide popup on mouse leave
+        el.addEventListener('mouseleave', function() {
+            popup.remove();
+        });
+        
         // Click event for marker
         el.addEventListener('click', function() {
             ADL.openContactModal(dealer.id);
@@ -241,16 +265,8 @@ var ADL = {
         
         // Display textual results
         var resultsHtml = '<div class="adl-results-header">';
-        if (data.dealers.length === 1) {
-            resultsHtml += 'Found <strong>1</strong> dealer';
-            if (data.dealers[0].distance) {
-                resultsHtml += ' (' + data.dealers[0].distance + ' km away)';
-            }
-        } else {
-            resultsHtml += 'Found <strong>' + data.dealers.length + '</strong> dealers';
-            if (data.dealers[0] && data.dealers[0].distance) {
-                resultsHtml += ' (closest: ' + data.dealers[0].distance + ' km away)';
-            }
+        if (data.dealers[0] && data.dealers[0].distance) {
+            resultsHtml += 'Closest dealer: ' + data.dealers[0].distance + ' km away';
         }
         resultsHtml += '</div>';
         
@@ -285,14 +301,23 @@ var ADL = {
      * Show search loading
      */
     showSearchLoading: function() {
-        jQuery('#adl-search-btn').prop('disabled', true).text(adl_frontend.strings.loading);
+        var $btn = jQuery('#adl-search-btn');
+        $btn.prop('disabled', true);
+        $btn.addClass('adl-loading');
+        // Add loading spinner
+        if (!$btn.find('.adl-loading-spinner').length) {
+            $btn.append('<span class="adl-loading-spinner"></span>');
+        }
     },
     
     /**
      * Hide search loading
      */
     hideSearchLoading: function() {
-        jQuery('#adl-search-btn').prop('disabled', false).text(adl_frontend.strings.search_button);
+        var $btn = jQuery('#adl-search-btn');
+        $btn.prop('disabled', false);
+        $btn.removeClass('adl-loading');
+        $btn.find('.adl-loading-spinner').remove();
     },
     
     /**
