@@ -25,6 +25,9 @@ class ADL_Frontend {
             wp_enqueue_script('mapbox-gl-js', 'https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js', array(), '2.15.0', true);
             wp_enqueue_style('mapbox-gl-css', 'https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css', array(), '2.15.0');
             
+            // Font Awesome for icons
+            wp_enqueue_style('font-awesome', 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css', array(), '6.4.0');
+            
             // Plugin scripts
             wp_enqueue_script('adl-frontend-js', ADL_PLUGIN_URL . 'assets/js/frontend.js', array('jquery', 'mapbox-gl-js'), ADL_VERSION, true);
             wp_enqueue_style('adl-frontend-css', ADL_PLUGIN_URL . 'assets/css/frontend.css', array(), ADL_VERSION);
@@ -88,10 +91,13 @@ class ADL_Frontend {
         <div id="adl-dealer-locator" class="adl-container">
             <?php if ($atts['show_search'] === 'true'): ?>
                 <div class="adl-search-container">
-                    <h3 class="adl-search-title"><?php _e('Search for Dealers', 'anonymous-dealer-locator'); ?></h3>
                     <div class="adl-search-box">
-                        <input type="text" id="adl-search-input" placeholder="<?php _e('Enter your address, city, or postal code...', 'anonymous-dealer-locator'); ?>" />
-                        <button id="adl-search-btn" type="button"><?php _e('Find Dealers', 'anonymous-dealer-locator'); ?></button>
+                        <div class="adl-search-input-wrapper">
+                            <input type="text" id="adl-search-input" placeholder="<?php _e('Enter your address, city, or postal code...', 'anonymous-dealer-locator'); ?>" />
+                            <button id="adl-search-btn" type="button" class="adl-search-icon-btn" aria-label="<?php _e('Search', 'anonymous-dealer-locator'); ?>">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
                     </div>
                     <div id="adl-search-results" class="adl-search-results"></div>
                 </div>

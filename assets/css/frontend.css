@@ -18,12 +18,10 @@
     margin-bottom: 2em;
 }
 
-/* Search box styling - WordPress native */
+/* Search box styling - Modern design */
 .adl-search-container {
-    background: #f9f9f9;
-    border: 1px solid #ddd;
+
     padding: 20px;
-    margin-bottom: 20px;
     border-radius: 4px;
 }
 
@@ -35,95 +33,170 @@
 
 .adl-search-box {
     display: flex;
-    gap: 10px;
+    gap: 0;
     margin-bottom: 15px;
-    flex-wrap: wrap;
+    align-items: stretch;
+}
+
+.adl-search-input-wrapper {
+    position: relative;
+    flex: 1;
+    display: flex;
     align-items: center;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.adl-search-input-wrapper:focus-within {
+    border-color: #e09900;
+    box-shadow: 0 0 0 2px rgba(224, 153, 0, 0.1);
 }
 
 .adl-search-box input[type="text"] {
     flex: 1;
-    min-width: 250px;
-    padding: 8px 12px;
-    border: 1px solid #ddd;
+    min-width: 0;
+    padding: 12px 16px;
+    border: none;
+    background: transparent;
     border-radius: 4px;
-    font-size: 14px;
-    line-height: 1.42857143;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #333;
+    outline: none;
+}
+
+.adl-search-box input[type="text"]::placeholder {
+    color: #999;
 }
 
 .adl-search-box input[type="text"]:focus {
-    border-color: #0073aa;
-    box-shadow: 0 0 0 1px #0073aa;
-    outline: 2px solid transparent;
+    outline: none;
 }
 
-.adl-search-box button {
-    padding: 8px 12px;
-    background: #0073aa;
+.adl-search-icon-btn {
+    padding: 0;
+    margin: 0;
+    width: 50px;
+    height: 100%;
+    background: #e09900;
     color: white;
-    border: 1px solid #0073aa;
-    border-radius: 4px;
+    border: none;
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0 4px 4px 0;
     cursor: pointer;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 13px;
-    line-height: 1.42857143;
-    font-weight: 400;
-    text-align: center;
-    white-space: nowrap;
-    vertical-align: middle;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
 }
 
-.adl-search-box button:hover {
-    background: #005a87;
-    border-color: #005a87;
+.adl-search-icon-btn:hover {
+    background: #c08500;
 }
 
-.adl-search-box button:focus {
-    background: #005a87;
-    border-color: #005a87;
-    box-shadow: 0 0 0 1px #0073aa;
+.adl-search-icon-btn:focus {
+    background: #c08500;
+    outline: none;
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.3);
 }
 
-.adl-search-box button:disabled {
+.adl-search-icon-btn:disabled {
     background: #ccc;
-    border-color: #ccc;
     cursor: not-allowed;
+    opacity: 0.6;
 }
 
-/* Geolocation button - WordPress style */
+.adl-search-icon-btn i {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.adl-search-icon-btn.adl-loading i {
+    animation: adl-spin 1s linear infinite;
+}
+
+/* Geolocation button - Map overlay icon button */
 .adl-geo-btn {
-    padding: 8px 12px !important;
-    background: #0073aa !important;
-    color: white !important;
-    border: 1px solid #0073aa !important;
-    border-radius: 4px !important;
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    width: 44px;
+    height: 44px;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #fff !important;
+    color: #333 !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border-radius: 50% !important;
     cursor: pointer !important;
-    text-decoration: none !important;
-    display: inline-block !important;
-    font-size: 13px !important;
-    line-height: 1.42857143 !important;
-    font-weight: 400 !important;
-    text-align: center !important;
-    white-space: nowrap !important;
-    vertical-align: middle !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    font-size: 18px !important;
+    line-height: 1 !important;
+}
+
+.adl-geo-btn:before {
+    content: "\f3c5";
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900;
+    display: block;
+    font-size: 18px;
+    line-height: 1;
+    color: #333;
 }
 
 .adl-geo-btn:hover {
-    background: #005a87 !important;
-    border-color: #005a87 !important;
+    background: #f8f9fa !important;
+    border-color: rgba(0, 0, 0, 0.15) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+    transform: translateY(-2px);
+}
+
+.adl-geo-btn:hover:before {
+    color: #0073aa;
 }
 
 .adl-geo-btn:focus {
-    background: #005a87 !important;
-    border-color: #005a87 !important;
-    box-shadow: 0 0 0 1px #0073aa !important;
+    background: #f8f9fa !important;
+    border-color: #0073aa !important;
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.15), 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+    outline: none;
 }
 
-.adl-geo-btn:disabled {
-    background: #ccc !important;
-    border-color: #ccc !important;
+.adl-geo-btn:focus:before {
+    color: #0073aa;
+}
+
+.adl-geo-btn:active {
+    transform: translateY(0);
+}
+
+.adl-geo-btn:disabled,
+.adl-geo-btn.adl-geo-loading {
+    opacity: 0.6 !important;
     cursor: not-allowed !important;
+    transform: none !important;
+}
+
+.adl-geo-btn.adl-geo-loading:before {
+    content: "\f01e";
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900;
+    animation: adl-spin 1s linear infinite;
+}
+
+@keyframes adl-spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* Search results - WordPress style */
@@ -166,6 +239,7 @@
 
 .adl-map-container {
     margin-top: 20px;
+    position: relative;
 }
 
 .adl-map-title {
@@ -204,7 +278,7 @@
 .adl-marker-icon {
     width: 32px;
     height: 32px;
-    background-color: #007cba;
+    background-color: #98c82f;
     border: 3px solid #ffffff;
     border-radius: 50%;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
@@ -224,7 +298,7 @@
 }
 
 .adl-marker:hover .adl-marker-icon {
-    background-color: #005a87;
+    background-color: #87b027;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.35);
     transform: scale(1.1);
 }
@@ -467,64 +541,6 @@
     border-radius: 4px;
 }
 
-/* Responsive design - WordPress style */
-@media (max-width: 768px) {
-    .adl-container {
-        padding: 15px;
-    }
-    
-    .adl-search-box {
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    .adl-search-box input[type="text"] {
-        min-width: 100%;
-    }
-    
-    .adl-modal {
-        padding: 10px;
-    }
-    
-    .adl-modal-content {
-        max-height: 95vh;
-    }
-    
-    .adl-modal-header,
-    .adl-modal-body {
-        padding: 15px;
-    }
-    
-    .adl-form-group:last-child {
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    .adl-submit-btn,
-    .adl-cancel-btn {
-        width: 100%;
-    }
-}
-
-@media (max-width: 480px) {
-    .adl-container {
-        padding: 10px;
-    }
-    
-    .adl-search-container {
-        padding: 15px;
-    }
-    
-    .adl-modal-header,
-    .adl-modal-body {
-        padding: 12px;
-    }
-    
-    .adl-form-group input,
-    .adl-form-group textarea {
-        font-size: 16px; /* Prevent zoom on iOS */
-    }
-}
 
 /* Mapbox overrides */
 .mapboxgl-popup-content {

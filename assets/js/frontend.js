@@ -6,6 +6,8 @@ var ADL = {
     map: null,
     markers: [],
     currentDealerId: null,
+    dealersData: null, // Store dealers data for clustering
+    hoverPopup: null, // Popup for showing city on hover
     
     /**
      * Initialize map
@@ -16,7 +18,7 @@ var ADL = {
         
         this.map = new mapboxgl.Map({
             container: 'adl-map',
-            style: 'mapbox://styles/mapbox/streets-v11', // Eller brug 'mapbox://styles/mapbox/light-v10'
+            style: 'mapbox://styles/mapbox/light-v10', // Light grayed out style
             center: options.center,
             zoom: options.zoom
         });
@@ -28,6 +30,11 @@ var ADL = {
             // Load initial dealers
             ADL.loadDealers();
         });
+        
+        // Ensure map is ready for clustering
+        if (this.map.loaded()) {
+            // Map already loaded
+        }
         
         // Save search radius
         this.searchRadius = options.searchRadius;
@@ -127,25 +134,209 @@ var ADL = {
     },
     
     /**
-     * Display dealers on map
+     * Display dealers on map with clustering
      */
     displayDealers: function(dealers, zoomToClosest) {
         // Remove existing markers
         this.clearMarkers();
+        
+        // Remove cluster layers and event listeners (but keep source if it exists)
+        if (this.map && this.map.loaded()) {
+            // Remove event listeners
+            this.map.off('click', 'clusters');
+            this.map.off('click', 'unclustered-point');
+            this.map.off('mouseenter', 'clusters');
+            this.map.off('mouseleave', 'clusters');
+            this.map.off('mouseenter', 'unclustered-point');
+            this.map.off('mouseleave', 'unclustered-point');
+            
+            // Remove layers
+            if (this.map.getLayer('clusters')) {
+                this.map.removeLayer('clusters');
+            }
+            if (this.map.getLayer('cluster-count')) {
+                this.map.removeLayer('cluster-count');
+            }
+            if (this.map.getLayer('unclustered-point')) {
+                this.map.removeLayer('unclustered-point');
+            }
+        }
         
         if (!dealers || dealers.length === 0) {
             this.showNoResults();
             return;
         }
         
-        // Add markers for each dealer
-        dealers.forEach(function(dealer) {
-            ADL.addDealerMarker(dealer);
+        // Ensure map is loaded
+        if (!this.map || !this.map.loaded()) {
+            var self = this;
+            this.map.on('load', function() {
+                self.displayDealers(dealers, zoomToClosest);
+            });
+            return;
+        }
+        
+        // Store dealers data
+        this.dealersData = dealers;
+        
+        // Convert dealers to GeoJSON format
+        var geoJsonData = this.convertToGeoJSON(dealers);
+        
+        // Add GeoJSON source with clustering
+        if (this.map.getSource('dealers')) {
+            this.map.getSource('dealers').setData(geoJsonData);
+        } else {
+            this.map.addSource('dealers', {
+                type: 'geojson',
+                data: geoJsonData,
+                cluster: true,
+                clusterMaxZoom: 12, // Stop clustering at zoom 12
+                clusterRadius: 50 // Balanced radius for better distribution at low zoom
+            });
+        }
+        
+        // Add cluster circles layer (only for clusters with 2+ points) - only if not already added
+        if (!this.map.getLayer('clusters')) {
+            this.map.addLayer({
+                id: 'clusters',
+                type: 'circle',
+                source: 'dealers',
+                filter: ['all', ['has', 'point_count'], ['>=', ['get', 'point_count'], 2]],
+                paint: {
+                    'circle-color': [
+                        'step',
+                        ['get', 'point_count'],
+                        '#98c82f',
+                        10,
+                        '#87b027',
+                        50,
+                        '#769820'
+                    ],
+                    'circle-radius': [
+                        'step',
+                        ['get', 'point_count'],
+                        20,
+                        10,
+                        25,
+                        50,
+                        30
+                    ],
+                    'circle-stroke-width': 2,
+                    'circle-stroke-color': '#fff'
+                }
+            });
+        }
+        
+        // Add cluster count labels (only for clusters with 2+ points) - only if not already added
+        if (!this.map.getLayer('cluster-count')) {
+            this.map.addLayer({
+                id: 'cluster-count',
+                type: 'symbol',
+                source: 'dealers',
+                filter: ['all', ['has', 'point_count'], ['>=', ['get', 'point_count'], 2]],
+                layout: {
+                    'text-field': '{point_count_abbreviated}',
+                    'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+                    'text-size': 14
+                },
+                paint: {
+                    'text-color': '#fff'
+                }
+            });
+        }
+        
+        // Add unclustered points (individual dealers) - only if not already added
+        if (!this.map.getLayer('unclustered-point')) {
+            this.map.addLayer({
+                id: 'unclustered-point',
+                type: 'circle',
+                source: 'dealers',
+                filter: ['!', ['has', 'point_count']],
+                paint: {
+                    'circle-color': '#98c82f',
+                    'circle-radius': 8,
+                    'circle-stroke-width': 2,
+                    'circle-stroke-color': '#fff'
+                }
+            });
+        }
+        
+        // Handle cluster click - zoom in
+        this.map.on('click', 'clusters', function(e) {
+            var features = this.map.queryRenderedFeatures(e.point, {
+                layers: ['clusters']
+            });
+            var clusterId = features[0].properties.cluster_id;
+            this.map.getSource('dealers').getClusterExpansionZoom(
+                clusterId,
+                function(err, zoom) {
+                    if (err) return;
+                    
+                    this.map.easeTo({
+                        center: features[0].geometry.coordinates,
+                        zoom: zoom
+                    });
+                }.bind(this)
+            );
+        }.bind(this));
+        
+        // Handle individual marker click - open contact modal
+        this.map.on('click', 'unclustered-point', function(e) {
+            var coordinates = e.features[0].geometry.coordinates.slice();
+            var dealerId = e.features[0].properties.dealerId;
+            ADL.openContactModal(dealerId);
         });
+        
+        // Change cursor on hover
+        this.map.on('mouseenter', 'clusters', function() {
+            this.map.getCanvas().style.cursor = 'pointer';
+        }.bind(this));
+        
+        this.map.on('mouseleave', 'clusters', function() {
+            this.map.getCanvas().style.cursor = '';
+        }.bind(this));
+        
+        this.map.on('mouseenter', 'unclustered-point', function(e) {
+            this.map.getCanvas().style.cursor = 'pointer';
+            
+            // Show city popup on hover
+            var feature = e.features[0];
+            var city = feature.properties.city;
+            
+            if (city) {
+                // Escape HTML
+                var cityText = city.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+                
+                // Remove existing popup if any
+                if (this.hoverPopup) {
+                    this.hoverPopup.remove();
+                }
+                
+                // Create and show popup
+                this.hoverPopup = new mapboxgl.Popup({
+                    closeButton: false,
+                    closeOnClick: false,
+                    className: 'adl-marker-popup'
+                })
+                .setLngLat(e.lngLat)
+                .setHTML('<div class="adl-popup-content">' + cityText + '</div>')
+                .addTo(this.map);
+            }
+        }.bind(this));
+        
+        this.map.on('mouseleave', 'unclustered-point', function() {
+            this.map.getCanvas().style.cursor = '';
+            
+            // Remove popup on mouse leave
+            if (this.hoverPopup) {
+                this.hoverPopup.remove();
+                this.hoverPopup = null;
+            }
+        }.bind(this));
         
         // Handle map zooming based on context
         if (zoomToClosest === true) {
-            // Search results - zoom to closest dealer or fit bounds for multiple
+            // Search results or geolocation - zoom to show dealers
             if (dealers.length === 1) {
                 // Single dealer - zoom to that dealer
                 this.map.flyTo({
@@ -153,11 +344,8 @@ var ADL = {
                     zoom: 12
                 });
             } else if (dealers.length > 1) {
-                // Multiple dealers from search - zoom to closest dealer
-                this.map.flyTo({
-                    center: [parseFloat(dealers[0].longitude), parseFloat(dealers[0].latitude)],
-                    zoom: 10
-                });
+                // Multiple dealers - fit bounds to show all, or zoom to closest
+                this.fitMapToBounds(dealers);
             }
         } else if (zoomToClosest === false) {
             // Initial load - fit bounds to show all dealers
@@ -172,6 +360,59 @@ var ADL = {
             }
         }
         // If zoomToClosest is undefined, don't change map view (markers only)
+    },
+    
+    /**
+     * Convert dealers array to GeoJSON format
+     */
+    convertToGeoJSON: function(dealers) {
+        // Remove duplicates based on coordinates to prevent false clustering
+        var seen = {};
+        var uniqueDealers = dealers.filter(function(dealer) {
+            var key = parseFloat(dealer.latitude).toFixed(6) + ',' + parseFloat(dealer.longitude).toFixed(6);
+            if (seen[key]) {
+                return false;
+            }
+            seen[key] = true;
+            return true;
+        });
+        
+        var features = uniqueDealers.map(function(dealer) {
+            return {
+                type: 'Feature',
+                geometry: {
+                    type: 'Point',
+                    coordinates: [parseFloat(dealer.longitude), parseFloat(dealer.latitude)]
+                },
+                properties: {
+                    dealerId: dealer.id,
+                    city: dealer.city || ''
+                }
+            };
+        });
+        
+        return {
+            type: 'FeatureCollection',
+            features: features
+        };
+    },
+    
+    /**
+     * Remove cluster layers and source
+     */
+    removeClusterLayers: function() {
+        if (this.map.getLayer('clusters')) {
+            this.map.removeLayer('clusters');
+        }
+        if (this.map.getLayer('cluster-count')) {
+            this.map.removeLayer('cluster-count');
+        }
+        if (this.map.getLayer('unclustered-point')) {
+            this.map.removeLayer('unclustered-point');
+        }
+        if (this.map.getSource('dealers')) {
+            this.map.removeSource('dealers');
+        }
     },
     
     /**
@@ -249,6 +490,41 @@ var ADL = {
     },
     
     /**
+     * Remove cluster layers and event listeners
+     */
+    removeClusterLayers: function() {
+        if (!this.map || !this.map.loaded()) {
+            return;
+        }
+        
+        // Remove event listeners
+        if (this.map.off) {
+            this.map.off('click', 'clusters');
+            this.map.off('click', 'unclustered-point');
+            this.map.off('mouseenter', 'clusters');
+            this.map.off('mouseleave', 'clusters');
+            this.map.off('mouseenter', 'unclustered-point');
+            this.map.off('mouseleave', 'unclustered-point');
+        }
+        
+        // Remove layers
+        if (this.map.getLayer('clusters')) {
+            this.map.removeLayer('clusters');
+        }
+        if (this.map.getLayer('cluster-count')) {
+            this.map.removeLayer('cluster-count');
+        }
+        if (this.map.getLayer('unclustered-point')) {
+            this.map.removeLayer('unclustered-point');
+        }
+        
+        // Remove source
+        if (this.map.getSource('dealers')) {
+            this.map.removeSource('dealers');
+        }
+    },
+    
+    /**
      * Display search results
      */
     displaySearchResults: function(data) {
@@ -304,10 +580,6 @@ var ADL = {
         var $btn = jQuery('#adl-search-btn');
         $btn.prop('disabled', true);
         $btn.addClass('adl-loading');
-        // Add loading spinner
-        if (!$btn.find('.adl-loading-spinner').length) {
-            $btn.append('<span class="adl-loading-spinner"></span>');
-        }
     },
     
     /**
@@ -317,7 +589,6 @@ var ADL = {
         var $btn = jQuery('#adl-search-btn');
         $btn.prop('disabled', false);
         $btn.removeClass('adl-loading');
-        $btn.find('.adl-loading-spinner').remove();
     },
     
     /**
@@ -342,10 +613,10 @@ var ADL = {
             return; // Geolocation not supported
         }
         
-        var $searchContainer = jQuery('.adl-search-box');
-        var $geoBtn = jQuery('<button type="button" id="adl-geolocation-btn" class="adl-geo-btn" title="Use my current location">📍 Use My Location</button>');
+        var $mapContainer = jQuery('.adl-map-container');
+        var $geoBtn = jQuery('<button type="button" id="adl-geolocation-btn" class="adl-geo-btn" title="Use my current location" aria-label="Use my current location"></button>');
         
-        $searchContainer.append($geoBtn);
+        $mapContainer.append($geoBtn);
         
         $geoBtn.on('click', function() {
             ADL.getCurrentLocation();
@@ -357,7 +628,7 @@ var ADL = {
      */
     getCurrentLocation: function() {
         var $geoBtn = jQuery('#adl-geolocation-btn');
-        $geoBtn.prop('disabled', true).text('🔍 Getting location...');
+        $geoBtn.prop('disabled', true).addClass('adl-geo-loading');
         
         navigator.geolocation.getCurrentPosition(
             function(position) {
@@ -370,7 +641,7 @@ var ADL = {
                 // Search for dealers near user's position (this will handle map zooming to dealers)
                 ADL.searchNearbyDealers(lat, lng);
                 
-                $geoBtn.prop('disabled', false).text('📍 Use My Location');
+                $geoBtn.prop('disabled', false).removeClass('adl-geo-loading');
             },
             function(error) {
                 var errorMessage;
@@ -390,7 +661,7 @@ var ADL = {
                 }
                 
                 jQuery('#adl-search-results').html('<div class="adl-error">' + errorMessage + '</div>');
-                $geoBtn.prop('disabled', false).text('📍 Use My Location');
+                $geoBtn.prop('disabled', false).removeClass('adl-geo-loading');
             },
             {
                 enableHighAccuracy: true,
