@@ -140,26 +140,15 @@ var ADL = {
         // Remove existing markers
         this.clearMarkers();
         
-        // Remove cluster layers and event listeners (but keep source if it exists)
+        // Remove old event listeners (but keep layers and source)
         if (this.map && this.map.loaded()) {
-            // Remove event listeners
+            // Remove event listeners to prevent duplicates
             this.map.off('click', 'clusters');
             this.map.off('click', 'unclustered-point');
             this.map.off('mouseenter', 'clusters');
             this.map.off('mouseleave', 'clusters');
             this.map.off('mouseenter', 'unclustered-point');
             this.map.off('mouseleave', 'unclustered-point');
-            
-            // Remove layers
-            if (this.map.getLayer('clusters')) {
-                this.map.removeLayer('clusters');
-            }
-            if (this.map.getLayer('cluster-count')) {
-                this.map.removeLayer('cluster-count');
-            }
-            if (this.map.getLayer('unclustered-point')) {
-                this.map.removeLayer('unclustered-point');
-            }
         }
         
         if (!dealers || dealers.length === 0) {
@@ -182,10 +171,61 @@ var ADL = {
         // Convert dealers to GeoJSON format
         var geoJsonData = this.convertToGeoJSON(dealers);
         
+        // Set up zoom handler
+        var self = this;
+        var performZoom = function() {
+            if (zoomToClosest === true) {
+                // Search results or geolocation - zoom to closest dealer
+                if (dealers.length > 0) {
+                    // Always zoom to the closest dealer (first in array)
+                    self.map.flyTo({
+                        center: [parseFloat(dealers[0].longitude), parseFloat(dealers[0].latitude)],
+                        zoom: 12
+                    });
+                }
+            } else if (zoomToClosest === false) {
+                // Initial load - fit bounds to show all dealers
+                if (dealers.length > 1) {
+                    self.fitMapToBounds(dealers);
+                } else if (dealers.length === 1) {
+                    // Even single dealer should be shown at moderate zoom for initial load
+                    self.map.flyTo({
+                        center: [parseFloat(dealers[0].longitude), parseFloat(dealers[0].latitude)],
+                        zoom: 8
+                    });
+                }
+            }
+            // If zoomToClosest is undefined, don't change map view (markers only)
+        };
+        
         // Add GeoJSON source with clustering
-        if (this.map.getSource('dealers')) {
-            this.map.getSource('dealers').setData(geoJsonData);
+        var source = this.map.getSource('dealers');
+        var zoomHandlerSet = false;
+        
+        var setupZoomHandler = function() {
+            if (zoomHandlerSet) return;
+            zoomHandlerSet = true;
+            
+            // Use requestAnimationFrame to ensure all operations are queued
+            requestAnimationFrame(function() {
+                // Wait for map to be idle (finished rendering)
+                self.map.once('idle', performZoom);
+            });
+        };
+        
+        if (source) {
+            // Source exists - set up listener BEFORE updating data
+            source.once('data', setupZoomHandler);
+            // Also set up a timeout fallback in case data event doesn't fire
+            setTimeout(function() {
+                if (!zoomHandlerSet) {
+                    setupZoomHandler();
+                }
+            }, 100);
+            // Now update the data
+            source.setData(geoJsonData);
         } else {
+            // Add new source
             this.map.addSource('dealers', {
                 type: 'geojson',
                 data: geoJsonData,
@@ -193,6 +233,20 @@ var ADL = {
                 clusterMaxZoom: 12, // Stop clustering at zoom 12
                 clusterRadius: 50 // Balanced radius for better distribution at low zoom
             });
+            // Get the source and set up listener
+            var newSource = this.map.getSource('dealers');
+            if (newSource) {
+                newSource.once('data', setupZoomHandler);
+                // Fallback timeout
+                setTimeout(function() {
+                    if (!zoomHandlerSet) {
+                        setupZoomHandler();
+                    }
+                }, 100);
+            } else {
+                // Fallback: just wait for idle
+                setupZoomHandler();
+            }
         }
         
         // Add cluster circles layer (only for clusters with 2+ points) - only if not already added
@@ -334,29 +388,6 @@ var ADL = {
             }
         }.bind(this));
         
-        // Handle map zooming based on context
-        if (zoomToClosest === true) {
-            // Search results or geolocation - zoom to closest dealer
-            if (dealers.length > 0) {
-                // Always zoom to the closest dealer (first in array)
-                this.map.flyTo({
-                    center: [parseFloat(dealers[0].longitude), parseFloat(dealers[0].latitude)],
-                    zoom: 12
-                });
-            }
-        } else if (zoomToClosest === false) {
-            // Initial load - fit bounds to show all dealers
-            if (dealers.length > 1) {
-                this.fitMapToBounds(dealers);
-            } else if (dealers.length === 1) {
-                // Even single dealer should be shown at moderate zoom for initial load
-                this.map.flyTo({
-                    center: [parseFloat(dealers[0].longitude), parseFloat(dealers[0].latitude)],
-                    zoom: 8
-                });
-            }
-        }
-        // If zoomToClosest is undefined, don't change map view (markers only)
     },
     
     /**
