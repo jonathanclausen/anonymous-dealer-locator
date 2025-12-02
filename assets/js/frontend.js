@@ -539,7 +539,7 @@ var ADL = {
         // Display textual results
         var resultsHtml = '<div class="adl-results-header">';
         if (data.dealers[0] && data.dealers[0].distance) {
-            resultsHtml += 'Closest dealer: ' + data.dealers[0].distance + ' km away';
+            resultsHtml += 'Closest dealer is ' + data.dealers[0].distance + ' km away';
         }
         resultsHtml += '</div>';
         
@@ -689,19 +689,12 @@ var ADL = {
                     
                     // Show number of results
                     var resultsHtml = '<div class="adl-results-header">';
-                    if (response.data.dealers.length === 0) {
-                        resultsHtml += 'No dealers found';
-                    } else if (response.data.dealers.length === 1) {
-                        resultsHtml += 'Found <strong>1</strong> dealer';
-                        if (response.data.dealers[0].distance) {
-                            resultsHtml += ' (' + response.data.dealers[0].distance + ' km away)';
-                        }
-                    } else {
-                        resultsHtml += 'Found <strong>' + response.data.dealers.length + '</strong> dealers';
-                        if (response.data.dealers[0].distance) {
-                            resultsHtml += ' (closest: ' + response.data.dealers[0].distance + ' km away)';
-                        }
+                
+                    
+                    if (response.data.dealers[0].distance) {
+                        resultsHtml += ' Closest dealer is ' + response.data.dealers[0].distance + ' km away)';
                     }
+                    
                     resultsHtml += '</div>';
                     jQuery('#adl-search-results').html(resultsHtml);
                     

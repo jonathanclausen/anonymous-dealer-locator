@@ -37,7 +37,7 @@ class ADL_Frontend {
                 'ajax_url' => admin_url('admin-ajax.php'),
                 'nonce' => wp_create_nonce('adl_frontend_nonce'),
                 'strings' => array(
-                    'search_placeholder' => __('Enter your address, city, or postal code...', 'anonymous-dealer-locator'),
+                    'search_placeholder' => __('Enter your address, city or country...', 'anonymous-dealer-locator'),
                     'search_button' => __('Find Dealers', 'anonymous-dealer-locator'),
                     'no_results' => __('No dealers found in your area. Try expanding your search radius.', 'anonymous-dealer-locator'),
                     'contact_dealer' => __('Contact this dealer', 'anonymous-dealer-locator'),
@@ -93,7 +93,7 @@ class ADL_Frontend {
                 <div class="adl-search-container">
                     <div class="adl-search-box">
                         <div class="adl-search-input-wrapper">
-                            <input type="text" id="adl-search-input" placeholder="<?php _e('Enter your address, city, or postal code...', 'anonymous-dealer-locator'); ?>" />
+                            <input type="text" id="adl-search-input" placeholder="<?php _e('Enter your address, city or country...', 'anonymous-dealer-locator'); ?>" />
                             <button id="adl-search-btn" type="button" class="adl-search-icon-btn" aria-label="<?php _e('Search', 'anonymous-dealer-locator'); ?>">
                                 <i class="fas fa-search"></i>
                             </button>
